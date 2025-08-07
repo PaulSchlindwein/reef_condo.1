@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+:root {
+  /* Reef Condo Color Palette - Sleek Tropical Luxury */
+  --ocean-blue: #0066CC;
+  --ocean-light: #00A8E8;
+  --coral-accent: #FF6B35;
+  --sand-light: #F5F3F0;
+  --sand-warm: #E8E2DB;
+  --white-crisp: #FFFFFF;
+  --gray-cool: #6B7280;
+  --gray-dark: #1F2937;
+  --success-green: #059669;
+  
+  /* Semantic Colors */
+  --background: var(--white-crisp);
+  --foreground: var(--gray-dark);
+  --primary: var(--ocean-blue);
+  --primary-hover: var(--ocean-light);
+  --accent: var(--coral-accent);
+  --muted: var(--sand-light);
+  --border: var(--sand-warm);
+  
+  /* Typography */
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  /* Spacing & Layout */
+  --container-max: 1200px;
+  --border-radius: 12px;
+  --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-medium: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global Typography Styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--gray-dark);
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--ocean-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  color: var(--ocean-blue);
+  margin-bottom: 1rem;
+}
+
+/* Component Base Styles */
+.card {
+  background: var(--white-crisp);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--ocean-light) 100%);
+  color: var(--white-crisp);
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Layout Utilities */
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive Images */
+.hero-image {
+  width: 100%;
+  height: 60vh;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+}
+
+@media (min-width: 768px) {
+  .hero-image {
+    height: 70vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-image {
+    height: 80vh;
+  }
+}
