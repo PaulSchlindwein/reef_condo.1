@@ -1,4 +1,5 @@
 import { Phone, MapPin, Clock, DollarSign, Info, Wifi, Car, Users, Waves, Key, Star } from 'lucide-react';
+import { getContentBlock } from '@/lib/content';
 
 export const metadata = {
   title: 'Essential Guest Information | Reef Condo Paradise Island',
@@ -26,7 +27,14 @@ function InfoCard({ icon, title, children, highlight = false }: InfoCardProps) {
   );
 }
 
-export default function InfoPage() {
+export default async function InfoPage() {
+  const heroTitle = await getContentBlock('info.hero.title', 'Essential Information');
+  const heroSubtitle = await getContentBlock('info.hero.subtitle', 'Insider tips and practical details for the perfect stay');
+  const emergencyTitle = await getContentBlock('info.emergency.title', 'Need Help During Your Stay?');
+  const emergencyLine1 = await getContentBlock('info.emergency.line1', 'Owner Services: 1-888-877-7598');
+  const emergencyLine2 = await getContentBlock('info.emergency.line2', 'Hotel Extension: 38 • Available 8 AM - 5 PM Daily');
+  const emergencyBody = await getContentBlock('info.emergency.body', 'The Owner Services team is your best resource for discounts, reservations, and any questions during your stay!');
+
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -34,10 +42,8 @@ export default function InfoPage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
             <Info className="h-16 w-16 mx-auto mb-4 text-white/90" />
-            <h1 className="hero-title mb-4">Essential Information</h1>
-            <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto">
-              Insider tips and practical details for the perfect stay
-            </p>
+            <h1 className="hero-title mb-4">{heroTitle}</h1>
+            <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto">{heroSubtitle}</p>
           </div>
         </div>
       </section>
@@ -345,14 +351,12 @@ export default function InfoPage() {
         <section className="mt-16">
           <div className="card p-8 bg-gradient-to-br from-coral-accent to-ocean-blue text-white text-center">
             <Phone className="h-12 w-12 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold mb-4">Need Help During Your Stay?</h3>
+            <h3 className="text-2xl font-bold mb-4">{emergencyTitle}</h3>
             <div className="space-y-2 mb-6">
-              <p className="text-xl font-semibold">Owner Services: 1-888-877-7598</p>
-              <p>Hotel Extension: 38 • Available 8 AM - 5 PM Daily</p>
+              <p className="text-xl font-semibold">{emergencyLine1}</p>
+              <p>{emergencyLine2}</p>
             </div>
-            <p className="text-white/90">
-              The Owner Services team is your best resource for discounts, reservations, and any questions during your stay!
-            </p>
+            <p className="text-white/90">{emergencyBody}</p>
           </div>
         </section>
       </div>

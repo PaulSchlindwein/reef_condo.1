@@ -1,36 +1,30 @@
 import Image from 'next/image';
-import { nassauAttractions, paradiseIslandAttractions, localRestaurants, transportation } from '../../../data/areaData';
-import { MapPin, Clock, DollarSign, ExternalLink, Star, Car } from 'lucide-react';
+import { nassauAttractions as localNassauAttractions, localRestaurants as localLocalRestaurants, transportation as localTransportation } from '../../../data/areaData';
+import { Clock } from 'lucide-react';
+import { getPriceDisplay } from '@/components/shared/PriceDisplay';
+import { getText, getList } from '@/content/client';
+import { AttractionItemSchema, LocalRestaurantItemSchema, TransportationItemSchema } from '@/content/schema';
+import { AttractionCard } from '@/components/shared/AttractionCard';
+import { RestaurantCard } from '@/components/shared/RestaurantCard';
 
 export const metadata = {
   title: 'Nassau & Paradise Island Guide | Reef Condo',
   description: 'Discover the best attractions, restaurants, and activities in Nassau and Paradise Island during your stay at Reef Condo.',
 };
 
-function getPriceDisplay(priceRange: string) {
-  const ranges = {
-    '$': '$',
-    '$$': '$$',
-    '$$$': '$$$',
-    'free': 'Free'
-  };
-  return ranges[priceRange as keyof typeof ranges] || priceRange;
-}
 
-function StatusBadge({ status }: { status: string }) {
-  const styles = {
-    active: 'bg-success-green text-white',
-    closed: 'bg-red-500 text-white',
-    seasonal: 'bg-yellow-500 text-white'
-  };
-  return (
-    <span className={`px-2 py-1 text-xs rounded-full ${styles[status as keyof typeof styles] || styles.active}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-}
 
-export default function AreaPage() {
+export default async function AreaPage() {
+  const heroTitle = await getText('area.hero.title', 'Explore Nassau & Paradise Island');
+  const heroSubtitle = await getText('area.hero.subtitle', 'Discover vibrant culture, pristine beaches, and unforgettable adventures beyond the resort');
+  const nassauIntro = await getText('area.nassau.intro', 'Immerse yourself in Bahamian culture, history, and natural beauty in the vibrant capital city.');
+  const localRestaurantsIntro = await getText('area.local.intro', 'Experience authentic Bahamian cuisine at these beloved local establishments.');
+  const transportationIntro = await getText('area.transport.intro', 'Choose the best transportation option for your Nassau and Paradise Island adventures.');
+
+  const nassauAttractions = await getList('area_nassau_attractions', AttractionItemSchema, localNassauAttractions);
+  const localRestaurants = await getList('area_local_restaurants', LocalRestaurantItemSchema, localLocalRestaurants);
+  const transportation = await getList('area_transportation', TransportationItemSchema, localTransportation);
+
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -45,10 +39,8 @@ export default function AreaPage() {
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="hero-title mb-4">Explore Nassau & Paradise Island</h1>
-            <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto">
-              Discover vibrant culture, pristine beaches, and unforgettable adventures beyond the resort
-            </p>
+            <h1 className="hero-title mb-4">{heroTitle}</h1>
+            <p className="text-xl md:text-2xl font-light max-w-3xl mx-auto">{heroSubtitle}</p>
           </div>
         </div>
       </section>
@@ -58,54 +50,12 @@ export default function AreaPage() {
         <section className="mb-16">
           <div className="text-center mb-12">
             <h2 className="section-title">Nassau Attractions</h2>
-            <p className="text-lg text-gray-cool max-w-3xl mx-auto">
-              Immerse yourself in Bahamian culture, history, and natural beauty in the vibrant capital city.
-            </p>
+            <p className="text-lg text-gray-cool max-w-3xl mx-auto">{nassauIntro}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {nassauAttractions.map((attraction, index) => (
-              <div key={index} className="card p-6 hover:shadow-medium transition-all duration-300">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-dark mb-1">{attraction.name}</h3>
-                    <p className="text-ocean-blue font-medium">{attraction.type}</p>
-                  </div>
-                  <StatusBadge status={attraction.status} />
-                </div>
-
-                <p className="text-gray-cool mb-4 line-clamp-3">{attraction.description}</p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center text-gray-cool">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      Price
-                    </span>
-                    <span className="font-medium">{getPriceDisplay(attraction.priceRange)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center text-gray-cool">
-                      <Car className="h-4 w-4 mr-1" />
-                      Distance
-                    </span>
-                    <span className="font-medium">{attraction.distance}</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-sand-warm pt-4">
-                  <div className="mb-3">
-                    <h4 className="font-medium text-gray-dark mb-2">Highlights</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {attraction.highlights.map((highlight, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-sand-light text-xs rounded-full text-gray-cool">
-                          {highlight}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <AttractionCard key={index} attraction={attraction} showDistance={true} />
             ))}
           </div>
 
@@ -150,58 +100,12 @@ export default function AreaPage() {
         <section className="mb-16">
           <div className="text-center mb-12">
             <h2 className="section-title">Local Favorites</h2>
-            <p className="text-lg text-gray-cool max-w-3xl mx-auto">
-              Experience authentic Bahamian cuisine at these beloved local establishments.
-            </p>
+            <p className="text-lg text-gray-cool max-w-3xl mx-auto">{localRestaurantsIntro}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {localRestaurants.map((restaurant, index) => (
-              <div key={index} className="card p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-dark mb-1">{restaurant.name}</h3>
-                    <p className="text-ocean-blue font-medium">{restaurant.type}</p>
-                    {restaurant.localFavorite && (
-                      <span className="inline-flex items-center mt-1 text-coral-accent text-sm">
-                        <Star className="h-4 w-4 mr-1" />
-                        Local Favorite
-                      </span>
-                    )}
-                  </div>
-                  <StatusBadge status={restaurant.status} />
-                </div>
-
-                <p className="text-gray-cool mb-4">{restaurant.description}</p>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center text-gray-cool">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      Price Range
-                    </span>
-                    <span className="font-medium">{getPriceDisplay(restaurant.priceRange)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center text-gray-cool">
-                      <Car className="h-4 w-4 mr-1" />
-                      Distance
-                    </span>
-                    <span className="font-medium">{restaurant.distance}</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-sand-warm pt-4">
-                  <h4 className="font-medium text-gray-dark mb-2">Specialties</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {restaurant.highlights.map((highlight, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-sand-light text-xs rounded-full text-gray-cool">
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <RestaurantCard key={index} restaurant={restaurant} showDistance={true} />
             ))}
           </div>
         </section>
@@ -210,9 +114,7 @@ export default function AreaPage() {
         <section>
           <div className="text-center mb-12">
             <h2 className="section-title">Getting Around</h2>
-            <p className="text-lg text-gray-cool max-w-3xl mx-auto">
-              Choose the best transportation option for your Nassau and Paradise Island adventures.
-            </p>
+            <p className="text-lg text-gray-cool max-w-3xl mx-auto">{transportationIntro}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -238,7 +140,7 @@ export default function AreaPage() {
                 <div className="border-t border-sand-warm pt-4">
                   <h4 className="font-medium text-gray-dark mb-2">Benefits</h4>
                   <ul className="space-y-1">
-                    {transport.highlights.map((highlight, idx) => (
+                    {(transport.highlights || []).map((highlight, idx) => (
                       <li key={idx} className="text-sm text-gray-cool flex items-start">
                         <span className="text-success-green mr-2 mt-0.5">•</span>
                         {highlight}
