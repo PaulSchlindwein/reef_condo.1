@@ -10,7 +10,7 @@ export function signSession(payload: object): string {
   return `${data}.${sig}`;
 }
 
-export function verifySession(token: string | undefined): any | null {
+export function verifySession(token: string | undefined): { role?: string; ts?: number } | null {
   if (!token) return null;
   const secret = process.env.SESSION_SECRET || 'dev-secret';
   const [data, sig] = token.split('.');

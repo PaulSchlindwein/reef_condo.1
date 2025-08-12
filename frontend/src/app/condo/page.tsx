@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { condoData } from '../../../data/condoData';
-import { MapPin, Users, Bed, Bath, Wifi, Car, Check, Clock, Phone } from 'lucide-react';
+import { MapPin, Users, Bed, Bath, Check, Clock, Phone } from 'lucide-react';
 
 export const metadata = {
   title: 'Luxury Condo Details | Reef Condo Paradise Island',
@@ -178,7 +178,7 @@ export default function CondoPage() {
                 Need Help?
               </h3>
               <p className="mb-4 text-white/90">
-                Have questions about your stay? We're here to help!
+                Have questions about your stay? We&apos;re here to help!
               </p>
               <div className="space-y-2">
                 <a 

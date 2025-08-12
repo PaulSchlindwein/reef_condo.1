@@ -25,9 +25,9 @@ export async function getList<T>(slug: string, schema: z.ZodType<T>, fallback: T
       .order('position');
     if (!data) return fallback;
     const parsed = data
-      .map((r: any) => schema.safeParse(r.data))
-      .filter((res: any) => res.success)
-      .map((res: any) => res.data as T);
+      .map((r: { data: unknown }) => schema.safeParse(r.data))
+      .filter((res: z.SafeParseReturnType<unknown, T>) => res.success)
+      .map((res: z.SafeParseSuccess<T>) => res.data);
     return parsed.length ? parsed : fallback;
   } catch {
     return fallback;

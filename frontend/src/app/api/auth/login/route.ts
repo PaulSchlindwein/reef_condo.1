@@ -4,7 +4,7 @@ import { setAdminCookie } from '@/lib/auth';
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  let body: any = {};
+  let body: { password?: string } = {};
   try {
     body = await req.json();
   } catch {
