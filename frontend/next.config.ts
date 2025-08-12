@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+// Force Vercel redeploy - ignore linting errors
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
