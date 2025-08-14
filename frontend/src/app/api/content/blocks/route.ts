@@ -7,12 +7,27 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const page = url.searchParams.get('page') || undefined;
+  const key = url.searchParams.get('key') || undefined;
   const supa = getServerSupabase();
   if (!supa) return NextResponse.json({ data: [] });
-  const query = supa.from('content_blocks').select('id, value');
-  const { data, error } = page ? await query.ilike('id', `${page}.%`) : await query;
+  
+  let query = supa.from('content_blocks').select('id, value');
+  
+  if (key) {
+    // Single key query
+    query = query.eq('id', key);
+  } else if (page) {
+    // Page prefix query
+    query = query.ilike('id', `${page}.%`);
+  }
+  
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+  
+  // Disable caching
+  const response = NextResponse.json({ data });
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  return response;
 }
 
 export async function PUT(req: NextRequest) {

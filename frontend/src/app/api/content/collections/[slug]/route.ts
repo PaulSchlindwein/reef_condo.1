@@ -24,7 +24,10 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
     .order('position');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   
-  return NextResponse.json({ items: data });
+  // Disable caching
+  const response = NextResponse.json({ items: data });
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  return response;
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {

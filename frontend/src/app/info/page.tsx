@@ -1,10 +1,9 @@
-import { Phone, MapPin, Clock, DollarSign, Info, Wifi, Car, Users, Waves, Key, Star } from 'lucide-react';
-import { getContentBlock } from '@/lib/content';
+'use client';
 
-export const metadata = {
-  title: 'Essential Guest Information | Reef Condo Paradise Island',
-  description: 'Everything you need to know for your stay at Reef Condo - insider tips, contact information, and practical details.',
-};
+import { Phone, MapPin, Clock, DollarSign, Info, Wifi, Car, Users, Waves, Key, Star } from 'lucide-react';
+import { useContentBlock } from '@/hooks/useContent';
+
+// Note: metadata removed for client component - will be handled by layout or head
 
 interface InfoCardProps {
   icon: React.ReactNode;
@@ -27,13 +26,13 @@ function InfoCard({ icon, title, children, highlight = false }: InfoCardProps) {
   );
 }
 
-export default async function InfoPage() {
-  const heroTitle = await getContentBlock('info.hero.title', 'Essential Information');
-  const heroSubtitle = await getContentBlock('info.hero.subtitle', 'Insider tips and practical details for the perfect stay');
-  const emergencyTitle = await getContentBlock('info.emergency.title', 'Need Help During Your Stay?');
-  const emergencyLine1 = await getContentBlock('info.emergency.line1', 'Owner Services: 1-888-877-7598');
-  const emergencyLine2 = await getContentBlock('info.emergency.line2', 'Hotel Extension: 38 • Available 8 AM - 5 PM Daily');
-  const emergencyBody = await getContentBlock('info.emergency.body', 'The Owner Services team is your best resource for discounts, reservations, and any questions during your stay!');
+export default function InfoPage() {
+  const { content: heroTitle } = useContentBlock('info.hero.title', 'Essential Information');
+  const { content: heroSubtitle } = useContentBlock('info.hero.subtitle', 'Insider tips and practical details for the perfect stay');
+  const { content: emergencyTitle } = useContentBlock('info.emergency.title', 'Need Help During Your Stay?');
+  const { content: emergencyLine1 } = useContentBlock('info.emergency.line1', 'Owner Services: 1-888-877-7598');
+  const { content: emergencyLine2 } = useContentBlock('info.emergency.line2', 'Hotel Extension: 38 • Available 8 AM - 5 PM Daily');
+  const { content: emergencyBody } = useContentBlock('info.emergency.body', 'The Owner Services team is your best resource for discounts, reservations, and any questions during your stay!');
 
   return (
     <div className="pt-16">
