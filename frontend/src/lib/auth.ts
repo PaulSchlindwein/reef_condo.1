@@ -30,7 +30,7 @@ export async function setAdminCookie() {
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Always secure since Vercel uses HTTPS
     path: '/',
     maxAge: 60 * 60 * 8,
   });
