@@ -78,6 +78,7 @@ export default function AdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [saving, setSaving] = useState(false);
   
 
   const [seeding, setSeeding] = useState(false);
@@ -199,40 +200,67 @@ export default function AdminPage() {
   }
 
   async function saveNewItem(data: Record<string, unknown>) {
+    setSaving(true);
     console.log('🔄 SAVING NEW ITEM:', { activeSlug, data });
-    const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
-    console.log('📡 API Response:', { status: res.status, ok: res.ok });
     
-    if (res.ok) {
-      console.log('✅ Save successful, refreshing items...');
-      await loadItems(activeSlug);
-      setShowAddModal(false);
-      setEditingItem(null);
-      console.log('✅ Modal closed, item refreshed');
-    } else {
-      const errorText = await res.text();
-      console.error('❌ Save failed:', { status: res.status, error: errorText });
-      alert(`Failed to save item: ${res.status} ${errorText}`);
+    try {
+      const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+      console.log('📡 API Response:', { status: res.status, ok: res.ok });
+      
+      if (res.ok) {
+        console.log('✅ Save successful, refreshing items...');
+        await loadItems(activeSlug);
+        console.log('✅ Items refreshed, closing modal...');
+        // Small delay to ensure UI updates are visible
+        setTimeout(() => {
+          setShowAddModal(false);
+          setEditingItem(null);
+          setSaving(false);
+          console.log('✅ Modal closed, UI should now show changes');
+        }, 100);
+      } else {
+        const errorText = await res.text();
+        console.error('❌ Save failed:', { status: res.status, error: errorText });
+        alert(`Failed to save item: ${res.status} ${errorText}`);
+        setSaving(false);
+      }
+    } catch (error) {
+      console.error('❌ Save error:', error);
+      alert('Failed to save item: Network error');
+      setSaving(false);
     }
   }
 
   async function saveItem(id: string, data: Record<string, unknown>) {
+    setSaving(true);
     console.log('🔄 UPDATING ITEM:', { activeSlug, id, data });
     const payload = { id, update: data };
     console.log('📦 Request payload:', payload);
     
-    const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-    console.log('📡 API Response:', { status: res.status, ok: res.ok });
-    
-    if (res.ok) {
-      console.log('✅ Update successful, refreshing items...');
-      await loadItems(activeSlug);
-      setEditingItem(null);
-      console.log('✅ Modal closed, items refreshed');
-    } else {
-      const errorText = await res.text();
-      console.error('❌ Update failed:', { status: res.status, error: errorText });
-      alert(`Failed to save item: ${res.status} ${errorText}`);
+    try {
+      const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      console.log('📡 API Response:', { status: res.status, ok: res.ok });
+      
+      if (res.ok) {
+        console.log('✅ Update successful, refreshing items...');
+        await loadItems(activeSlug);
+        console.log('✅ Items refreshed, closing modal...');
+        // Small delay to ensure UI updates are visible
+        setTimeout(() => {
+          setEditingItem(null);
+          setSaving(false);
+          console.log('✅ Modal closed, UI should now show changes');
+        }, 100);
+      } else {
+        const errorText = await res.text();
+        console.error('❌ Update failed:', { status: res.status, error: errorText });
+        alert(`Failed to save item: ${res.status} ${errorText}`);
+        setSaving(false);
+      }
+    } catch (error) {
+      console.error('❌ Update error:', error);
+      alert('Failed to save item: Network error');
+      setSaving(false);
     }
   }
 
@@ -342,6 +370,7 @@ export default function AdminPage() {
                 setEditingItem(null);
                 setShowAddModal(false);
               }}
+              saving={saving}
             />
           </div>
         </div>
@@ -591,15 +620,32 @@ export default function AdminPage() {
                   </div>
                 </div>
                 
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <div className="text-sm text-gray-cool">
-                  {item.data?.description && typeof item.data.description === 'string' && (
-                    <p className="mb-2">{(String(item.data.description).substring(0, 100) + '...') as React.ReactNode}</p>
-                  )}
+                  {(() => {
+                    const desc = item.data?.description;
+                    return desc && typeof desc === 'string' ? (
+                      <p className="mb-2">{desc.substring(0, 100) + '...'}</p>
+                    ) : null;
+                  })()}
                   <div className="flex gap-4">
-                    {item.data?.location && (<span>📍 {String(item.data.location)}</span> as React.ReactNode)}
-                    {item.data?.priceRange && (<span>💰 {String(item.data.priceRange)}</span> as React.ReactNode)}
-                    {item.data?.status && (<span>🟢 {String(item.data.status)}</span> as React.ReactNode)}
+                    {(() => {
+                      const location = item.data?.location;
+                      return location && typeof location === 'string' ? (
+                        <span>📍 {location}</span>
+                      ) : null;
+                    })()}
+                    {(() => {
+                      const priceRange = item.data?.priceRange;
+                      return priceRange && typeof priceRange === 'string' ? (
+                        <span>💰 {priceRange}</span>
+                      ) : null;
+                    })()}
+                    {(() => {
+                      const status = item.data?.status;
+                      return status && typeof status === 'string' ? (
+                        <span>🟢 {status}</span>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>
@@ -626,11 +672,12 @@ export default function AdminPage() {
 }
 
 // Item edit form component
-function ItemEditForm({ slug, item, onSave, onCancel }: {
+function ItemEditForm({ slug, item, onSave, onCancel, saving }: {
   slug: string;
   item: Item | null;
   onSave: (data: Record<string, unknown>) => void;
   onCancel: () => void;
+  saving?: boolean;
 }) {
   const [formData, setFormData] = useState(item?.data || {});
   
@@ -701,8 +748,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         </div>
         
         <div className="flex justify-end gap-3 pt-4">
-          <button type="button" onClick={onCancel} className="btn">Cancel</button>
-          <button type="submit" className="btn-primary">Save</button>
+          <button type="button" onClick={onCancel} className="btn" disabled={saving}>Cancel</button>
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
       </form>
     );
@@ -953,8 +1002,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       )}
       
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <button type="button" onClick={onCancel} className="btn">Cancel</button>
-        <button type="submit" className="btn-primary">Save</button>
+        <button type="button" onClick={onCancel} className="btn" disabled={saving}>Cancel</button>
+        <button type="submit" className="btn-primary" disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </button>
       </div>
     </form>
   );
