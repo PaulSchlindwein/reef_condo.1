@@ -167,18 +167,40 @@ export default function AdminPage() {
 
   async function loadItems(slug: string) {
     console.log('📥 LOADING ITEMS:', { slug });
-    const url = `/api/content/collections/${slug}?t=${Date.now()}`;
+    const timestamp = Date.now();
+    const url = `/api/content/collections/${slug}?t=${timestamp}&bust=${Math.random()}`;
     console.log('🌐 Request URL:', url);
     
-    const res = await fetch(url, { cache: 'no-store' });
-    console.log('📡 Load Response:', { status: res.status, ok: res.ok });
+    const res = await fetch(url, { 
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
+    console.log('📡 Load Response:', { status: res.status, ok: res.ok, timestamp });
     
     const js = await res.json();
     console.log('📋 Loaded data:', { itemCount: js.items?.length || 0, items: js.items });
     
-    // Debug: Log current items vs new items
-    console.log('🔍 BEFORE UPDATE - Current items:', items.map(i => ({ id: i.id, name: i.data?.name, description: i.data?.description })));
-    console.log('🔍 AFTER FETCH - New items:', (js.items || []).map((i: any) => ({ id: i.id, name: i.data?.name, description: i.data?.description })));
+    // Debug: Log current items vs new items with FULL details
+    console.log('🔍 BEFORE UPDATE - Current items:', items.map(i => ({ 
+      id: i.id, 
+      name: i.data?.name, 
+      description: typeof i.data?.description === 'string' ? i.data.description.substring(0, 50) + '...' : i.data?.description,
+      fullDescription: i.data?.description
+    })));
+    console.log('🔍 AFTER FETCH - New items:', (js.items || []).map((i: any) => ({ 
+      id: i.id, 
+      name: i.data?.name, 
+      description: typeof i.data?.description === 'string' ? i.data.description.substring(0, 50) + '...' : i.data?.description,
+      fullDescription: i.data?.description
+    })));
+    
+    // Check if data actually changed
+    const itemsChanged = JSON.stringify(items) !== JSON.stringify(js.items || []);
+    console.log('🔄 DATA ACTUALLY CHANGED:', itemsChanged);
     
     // Force new array reference to ensure React detects the change
     const newItems = [...(js.items || [])];
@@ -286,17 +308,9 @@ export default function AdminPage() {
     const completeUpdatedData = { ...currentItem.data, ...newData };
     console.log('🔄 Complete updated data to send:', completeUpdatedData);
     
-    // OPTIMISTIC UPDATE: Update UI immediately
-    const optimisticItems = items.map(item => 
-      item.id === id 
-        ? { ...item, data: completeUpdatedData }
-        : item
-    );
-    console.log('⚡ Applying optimistic update to UI');
-    setItems(optimisticItems);
-    
-    // Close modal immediately so user sees the optimistic update
+    // Close modal immediately 
     setEditingItem(null);
+    console.log('🚪 Modal closed - preparing server update');
     
     const payload = { id, update: completeUpdatedData };
     console.log('📦 API Request payload:', payload);
@@ -312,21 +326,22 @@ export default function AdminPage() {
       
       if (res.ok) {
         console.log('✅ Server update successful - optimistic update confirmed');
+        // Small delay to ensure database transaction is fully committed
+        console.log('⏳ Waiting 500ms for database transaction to commit...');
+        await new Promise(resolve => setTimeout(resolve, 500));
         // Fetch fresh data to ensure consistency
         await loadItems(activeSlug);
         console.log('✅ Fresh data loaded to confirm server state');
       } else {
-        // ROLLBACK: Server update failed, revert optimistic update
-        console.error('❌ Server update failed - rolling back optimistic update');
-        setItems(originalItems);
+        // Server update failed
+        console.error('❌ Server update failed');
         const errorText = await res.text();
         console.error('❌ Server error details:', { status: res.status, error: errorText });
         alert(`Failed to save item: ${res.status} ${errorText}`);
       }
     } catch (error) {
-      // ROLLBACK: Network error, revert optimistic update
-      console.error('❌ Network error - rolling back optimistic update:', error);
-      setItems(originalItems);
+      // Network error
+      console.error('❌ Network error:', error);
       alert('Failed to save item: Network error');
     } finally {
       setSaving(false);
@@ -750,9 +765,21 @@ function ItemEditForm({ slug, item, onSave, onCancel, saving }: {
   saving?: boolean;
 }) {
   const [formData, setFormData] = useState(item?.data || {});
+  const [initializedItemId, setInitializedItemId] = useState(item?.id);
   
-  // Debug: Log form initialization
-  console.log('🎨 Form initialized with data:', { slug, itemId: item?.id, initialData: item?.data, formData });
+  // Only reinitialize form data if we're editing a different item
+  if (item?.id !== initializedItemId) {
+    console.log('🎨 Form switching to new item - reinitializing:', { 
+      oldItemId: initializedItemId, 
+      newItemId: item?.id, 
+      newData: item?.data 
+    });
+    setFormData(item?.data || {});
+    setInitializedItemId(item?.id);
+  }
+  
+  // Debug: Log form state (only when it actually changes)
+  console.log('🎨 Form current state:', { slug, itemId: item?.id, formData });
   
   const updateField = (field: string, value: unknown) => {
     setFormData((prev: Record<string, unknown>) => ({ ...prev, [field]: value }));

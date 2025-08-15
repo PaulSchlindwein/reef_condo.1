@@ -72,8 +72,40 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
     
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     
+    console.log('🔄 API: Updating item:', { id, update });
+    
+    const { data: beforeData, error: beforeError } = await supa
+      .from('collection_items')
+      .select('data')
+      .eq('id', id)
+      .single();
+    
+    if (beforeError) {
+      console.error('❌ API: Error fetching before data:', beforeError);
+      return NextResponse.json({ error: beforeError.message }, { status: 500 });
+    }
+    
+    console.log('📋 API: Data before update:', beforeData?.data);
+    
     const { error } = await supa.from('collection_items').update({ data: update }).eq('id', id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('❌ API: Update error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    
+    // Verify the update worked
+    const { data: afterData, error: afterError } = await supa
+      .from('collection_items')
+      .select('data')
+      .eq('id', id)
+      .single();
+    
+    if (afterError) {
+      console.error('❌ API: Error fetching after data:', afterError);
+    } else {
+      console.log('📋 API: Data after update:', afterData?.data);
+      console.log('✅ API: Update successful, data changed:', JSON.stringify(beforeData?.data) !== JSON.stringify(afterData?.data));
+    }
     
     return NextResponse.json({ ok: true });
   } catch (err) {
