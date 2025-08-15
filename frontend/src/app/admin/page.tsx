@@ -79,6 +79,7 @@ export default function AdminPage() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [forceRender, setForceRender] = useState(0);
   
 
   const [seeding, setSeeding] = useState(false);
@@ -223,10 +224,15 @@ export default function AdminPage() {
     console.log('🔄 DATA ACTUALLY CHANGED:', itemsChanged);
     console.log('📊 ITEM COUNT CHANGED:', items.length, '→', (js.items || []).length);
     
-    // Force new array reference to ensure React detects the change
-    const freshItems = [...(js.items || [])];
+    // Force new array reference with deep cloning to ensure React detects the change
+    const freshItems = (js.items || []).map((item: any) => ({
+      ...item,
+      data: { ...item.data }, // Force new object references
+      _refreshKey: Date.now() // Add unique key to force re-render
+    }));
     setItems(freshItems);
-    console.log('✅ Items state updated with new array reference');
+    setForceRender(prev => prev + 1); // Force component re-render
+    console.log('✅ Items state updated with deep cloned objects and refresh key');
   }
 
   function getDefaultItem(slug: string) {
@@ -705,9 +711,9 @@ export default function AdminPage() {
 
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid gap-6" key={forceRender}>
             {items.map((item, index) => (
-              <div key={item.id} className="card p-6">
+              <div key={`${item.id}-${(item as any)._refreshKey || 0}`} className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">
                     {String(item.data?.name || item.data?.type || item.data?.label || `Item ${index + 1}`)}
