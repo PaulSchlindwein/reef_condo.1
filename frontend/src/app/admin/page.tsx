@@ -165,11 +165,18 @@ export default function AdminPage() {
   }
 
   async function loadItems(slug: string) {
-    const res = await fetch(`/api/content/collections/${slug}?t=${Date.now()}`, {
-      cache: 'no-store'
-    });
+    console.log('📥 LOADING ITEMS:', { slug });
+    const url = `/api/content/collections/${slug}?t=${Date.now()}`;
+    console.log('🌐 Request URL:', url);
+    
+    const res = await fetch(url, { cache: 'no-store' });
+    console.log('📡 Load Response:', { status: res.status, ok: res.ok });
+    
     const js = await res.json();
+    console.log('📋 Loaded data:', { itemCount: js.items?.length || 0, items: js.items });
+    
     setItems(js.items || []);
+    console.log('✅ Items state updated');
   }
 
   function getDefaultItem(slug: string) {
@@ -192,23 +199,40 @@ export default function AdminPage() {
   }
 
   async function saveNewItem(data: Record<string, unknown>) {
+    console.log('🔄 SAVING NEW ITEM:', { activeSlug, data });
     const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+    console.log('📡 API Response:', { status: res.status, ok: res.ok });
+    
     if (res.ok) {
+      console.log('✅ Save successful, refreshing items...');
       await loadItems(activeSlug);
       setShowAddModal(false);
       setEditingItem(null);
+      console.log('✅ Modal closed, item refreshed');
     } else {
-      alert('Failed to save item');
+      const errorText = await res.text();
+      console.error('❌ Save failed:', { status: res.status, error: errorText });
+      alert(`Failed to save item: ${res.status} ${errorText}`);
     }
   }
 
   async function saveItem(id: string, data: Record<string, unknown>) {
-    const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, update: data }) });
+    console.log('🔄 UPDATING ITEM:', { activeSlug, id, data });
+    const payload = { id, update: data };
+    console.log('📦 Request payload:', payload);
+    
+    const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    console.log('📡 API Response:', { status: res.status, ok: res.ok });
+    
     if (res.ok) {
+      console.log('✅ Update successful, refreshing items...');
       await loadItems(activeSlug);
       setEditingItem(null);
+      console.log('✅ Modal closed, items refreshed');
     } else {
-      alert('Failed to save item');
+      const errorText = await res.text();
+      console.error('❌ Update failed:', { status: res.status, error: errorText });
+      alert(`Failed to save item: ${res.status} ${errorText}`);
     }
   }
 
@@ -628,6 +652,8 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📝 FORM SUBMITTED:', { slug, formData });
+    console.log('🎯 Calling onSave with data:', formData);
     onSave(formData);
   };
 
