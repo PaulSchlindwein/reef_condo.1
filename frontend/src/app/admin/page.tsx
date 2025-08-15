@@ -494,6 +494,8 @@ export default function AdminPage() {
             
             <div className="flex items-center gap-4">
               <select 
+                id="collection-selector"
+                name="collection"
                 className="input" 
                 value={activeSlug} 
                 onChange={async (e) => { 
@@ -735,8 +737,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Price Range */}
         {slug !== 'resort_amenities' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Price Range</label>
+            <label htmlFor="priceRange" className="block text-sm font-medium mb-2">Price Range</label>
             <select 
+              id="priceRange"
+              name="priceRange"
               className="input w-full" 
               value={getStringValue('priceRange', '$')} 
               onChange={(e) => updateField('priceRange', e.target.value)}
@@ -754,8 +758,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Location */}
         {slug !== 'area_transportation' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Location</label>
+            <label htmlFor="location" className="block text-sm font-medium mb-2">Location</label>
             <input 
+              id="location"
+              name="location"
               className="input w-full" 
               value={getStringValue('location')} 
               onChange={(e) => updateField('location', e.target.value)}
@@ -841,6 +847,8 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
           {slug === 'area_local_restaurants' ? 'Specialties' : 'Highlights'}
         </label>
         <input 
+          id="highlights"
+          name="highlights"
           className="input w-full" 
           value={getArrayValue('highlights').join(', ')} 
           onChange={(e) => updateField('highlights', e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean))}
@@ -878,9 +886,11 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       <div>
         <label className="block text-sm font-medium mb-2">Link (optional)</label>
         <input 
+          id="link"
+          name="link"
           className="input w-full" 
           type="url"
-                        value={getStringValue('link')} 
+          value={getStringValue('link')} 
           onChange={(e) => updateField('link', e.target.value)}
           placeholder="https://..."
         />
