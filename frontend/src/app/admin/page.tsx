@@ -182,29 +182,50 @@ export default function AdminPage() {
     console.log('📡 Load Response:', { status: res.status, ok: res.ok, timestamp });
     
     const js = await res.json();
-    console.log('📋 Loaded data:', { itemCount: js.items?.length || 0, items: js.items });
+    console.log('📋 Loaded data:', { 
+      itemCount: js.items?.length || 0, 
+      items: js.items,
+      serverTimestamp: js.timestamp,
+      serverTime: js.serverTime,
+      nodeEnv: js.nodeEnv,
+      clientTime: Date.now(),
+      timeDiff: js.serverTime ? Date.now() - js.serverTime : 'unknown'
+    });
     
     // Debug: Log current items vs new items with FULL details
-    console.log('🔍 BEFORE UPDATE - Current items:', items.map(i => ({ 
+    const currentItems = items.map(i => ({ 
       id: i.id, 
       name: i.data?.name, 
       description: typeof i.data?.description === 'string' ? i.data.description.substring(0, 50) + '...' : i.data?.description,
       fullDescription: i.data?.description
-    })));
-    console.log('🔍 AFTER FETCH - New items:', (js.items || []).map((i: any) => ({ 
+    }));
+    const newItems = (js.items || []).map((i: any) => ({ 
       id: i.id, 
       name: i.data?.name, 
       description: typeof i.data?.description === 'string' ? i.data.description.substring(0, 50) + '...' : i.data?.description,
       fullDescription: i.data?.description
-    })));
+    }));
+    
+    console.log('🔍 BEFORE UPDATE - Current items:', currentItems);
+    console.log('🔍 AFTER FETCH - New items:', newItems);
+    
+    // Check which items are missing/added
+    const currentIds = new Set(currentItems.map((i: any) => i.id));
+    const newIds = new Set(newItems.map((i: any) => i.id));
+    const missingItems = currentItems.filter((i: any) => !newIds.has(i.id));
+    const addedItems = newItems.filter((i: any) => !currentIds.has(i.id));
+    
+    console.log('❌ MISSING ITEMS after fetch:', missingItems);
+    console.log('➕ ADDED ITEMS after fetch:', addedItems);
     
     // Check if data actually changed
     const itemsChanged = JSON.stringify(items) !== JSON.stringify(js.items || []);
     console.log('🔄 DATA ACTUALLY CHANGED:', itemsChanged);
+    console.log('📊 ITEM COUNT CHANGED:', items.length, '→', (js.items || []).length);
     
     // Force new array reference to ensure React detects the change
-    const newItems = [...(js.items || [])];
-    setItems(newItems);
+    const freshItems = [...(js.items || [])];
+    setItems(freshItems);
     console.log('✅ Items state updated with new array reference');
   }
 
@@ -329,8 +350,18 @@ export default function AdminPage() {
         // Small delay to ensure database transaction is fully committed
         console.log('⏳ Waiting 500ms for database transaction to commit...');
         await new Promise(resolve => setTimeout(resolve, 500));
-        // Fetch fresh data to ensure consistency
+        
+        // Try multiple refresh strategies to bypass caching
+        console.log('🔄 Attempting fresh data fetch (attempt 1)...');
         await loadItems(activeSlug);
+        
+        // If item count is still wrong, try again with longer delay
+        if (items.length !== (await (await fetch(`/api/content/collections/${activeSlug}?t=${Date.now()}&bypass=${Math.random()}`, { cache: 'no-store' })).json()).items?.length) {
+          console.log('⚠️ Item count mismatch detected, trying again in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await loadItems(activeSlug);
+        }
+        
         console.log('✅ Fresh data loaded to confirm server state');
       } else {
         // Server update failed
@@ -661,6 +692,13 @@ export default function AdminPage() {
                 className="px-4 py-2 bg-green-100 border-2 border-green-500 text-green-700 rounded-lg hover:bg-green-200 font-medium disabled:opacity-50"
               >
                 {seeding ? 'Seeding...' : '🌱 Seed Initial Data'}
+              </button>
+              
+              <button 
+                onClick={() => loadItems(activeSlug)} 
+                className="px-4 py-2 bg-blue-100 border-2 border-blue-500 text-blue-700 rounded-lg hover:bg-blue-200 font-medium"
+              >
+                🔄 Force Refresh
               </button>
             </div>
             

@@ -9,24 +9,57 @@ async function getCollectionId(supa: any, slug: string) {
   return data?.id as string | undefined;
 }
 
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const supa = getServerSupabase();
   const params = await ctx.params;
-  if (!supa) return NextResponse.json({ items: [] });
+  
+  console.log('📥 API: GET request for collection:', params.slug);
+  
+  if (!supa) {
+    console.log('❌ API: No Supabase client');
+    return NextResponse.json({ items: [] });
+  }
   
   const colId = await getCollectionId(supa, params.slug);
-  if (!colId) return NextResponse.json({ items: [] });
+  if (!colId) {
+    console.log('❌ API: Collection not found:', params.slug);
+    return NextResponse.json({ items: [] });
+  }
+  
+  console.log('🔍 API: Fetching items for collection ID:', colId);
   
   const { data, error } = await supa
     .from('collection_items')
     .select('id, position, data')
     .eq('collection_id', colId)
     .order('position');
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    
+  if (error) {
+    console.error('❌ API: Fetch error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   
-  // Disable caching
-  const response = NextResponse.json({ items: data });
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  console.log('✅ API: Fetched items:', { count: data?.length || 0, items: data?.map(i => ({ id: i.id, name: i.data?.name })) });
+  
+  // Add timestamp to detect caching issues
+  const timestamp = new Date().toISOString();
+  console.log('🕐 API: Response timestamp:', timestamp);
+  
+  // Aggressive caching prevention
+  const response = NextResponse.json({ 
+    items: data, 
+    timestamp,
+    serverTime: Date.now(),
+    nodeEnv: process.env.NODE_ENV
+  });
+  
+  // Multiple cache-busting headers
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+  response.headers.set('Surrogate-Control', 'no-store');
+  response.headers.set('X-Timestamp', timestamp);
+  
   return response;
 }
 
@@ -105,6 +138,24 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ slug: strin
     } else {
       console.log('📋 API: Data after update:', afterData?.data);
       console.log('✅ API: Update successful, data changed:', JSON.stringify(beforeData?.data) !== JSON.stringify(afterData?.data));
+    }
+    
+    // Double-check: Fetch ALL items in this collection to see if our item is still there
+    const params = await ctx.params;
+    const collectionId = await getCollectionId(supa, params.slug);
+    const { data: allItems, error: allItemsError } = await supa
+      .from('collection_items')
+      .select('id, data')
+      .eq('collection_id', collectionId);
+    
+    if (!allItemsError) {
+      console.log('🔍 API: All items in collection after update:', { 
+        count: allItems?.length || 0, 
+        items: allItems?.map(i => ({ id: i.id, name: i.data?.name })),
+        updatedItemStillExists: allItems?.some(i => i.id === id)
+      });
+    } else {
+      console.error('❌ API: Error fetching all items:', allItemsError);
     }
     
     return NextResponse.json({ ok: true });
