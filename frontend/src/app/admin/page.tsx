@@ -176,8 +176,14 @@ export default function AdminPage() {
     const js = await res.json();
     console.log('📋 Loaded data:', { itemCount: js.items?.length || 0, items: js.items });
     
-    setItems(js.items || []);
-    console.log('✅ Items state updated');
+    // Debug: Log current items vs new items
+    console.log('🔍 BEFORE UPDATE - Current items:', items.map(i => ({ id: i.id, name: i.data?.name, description: i.data?.description })));
+    console.log('🔍 AFTER FETCH - New items:', (js.items || []).map((i: any) => ({ id: i.id, name: i.data?.name, description: i.data?.description })));
+    
+    // Force new array reference to ensure React detects the change
+    const newItems = [...(js.items || [])];
+    setItems(newItems);
+    console.log('✅ Items state updated with new array reference');
   }
 
   function getDefaultItem(slug: string) {
@@ -208,16 +214,14 @@ export default function AdminPage() {
       console.log('📡 API Response:', { status: res.status, ok: res.ok });
       
       if (res.ok) {
-        console.log('✅ Save successful, refreshing items...');
+        console.log('✅ Save successful, closing modal and refreshing items...');
+        // Close modal first so user can see the list update
+        setShowAddModal(false);
+        setEditingItem(null);
+        setSaving(false);
+        // Then refresh the items
         await loadItems(activeSlug);
-        console.log('✅ Items refreshed, closing modal...');
-        // Small delay to ensure UI updates are visible
-        setTimeout(() => {
-          setShowAddModal(false);
-          setEditingItem(null);
-          setSaving(false);
-          console.log('✅ Modal closed, UI should now show changes');
-        }, 100);
+        console.log('✅ Modal closed and items refreshed - changes should be visible');
       } else {
         const errorText = await res.text();
         console.error('❌ Save failed:', { status: res.status, error: errorText });
@@ -242,15 +246,13 @@ export default function AdminPage() {
       console.log('📡 API Response:', { status: res.status, ok: res.ok });
       
       if (res.ok) {
-        console.log('✅ Update successful, refreshing items...');
+        console.log('✅ Update successful, closing modal and refreshing items...');
+        // Close modal first so user can see the list update
+        setEditingItem(null);
+        setSaving(false);
+        // Then refresh the items
         await loadItems(activeSlug);
-        console.log('✅ Items refreshed, closing modal...');
-        // Small delay to ensure UI updates are visible
-        setTimeout(() => {
-          setEditingItem(null);
-          setSaving(false);
-          console.log('✅ Modal closed, UI should now show changes');
-        }, 100);
+        console.log('✅ Modal closed and items refreshed - changes should be visible');
       } else {
         const errorText = await res.text();
         console.error('❌ Update failed:', { status: res.status, error: errorText });
