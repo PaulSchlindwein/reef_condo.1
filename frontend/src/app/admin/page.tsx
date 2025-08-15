@@ -262,8 +262,10 @@ export default function AdminPage() {
         <div className="max-w-md mx-auto">
           <h1 className="text-3xl font-bold mb-6 text-center">Admin Login</h1>
           <form onSubmit={login} className="card p-6">
-            <label className="block text-sm mb-2">Password</label>
+            <label htmlFor="admin-password" className="block text-sm mb-2">Password</label>
             <input 
+              id="admin-password"
+              name="password"
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               type="password" 
@@ -428,9 +430,11 @@ export default function AdminPage() {
                 
                 return (
                   <div key={id} className={`card p-4 ${isLongText ? 'md:col-span-2' : ''}`}>
-                    <label className="block text-sm font-medium text-gray-dark mb-2">{label}</label>
+                    <label htmlFor={id} className="block text-sm font-medium text-gray-dark mb-2">{label}</label>
                     {isLongText ? (
                       <textarea
+                        id={id}
+                        name={id}
                         className="input w-full h-24"
                         placeholder={placeholder}
                         defaultValue={value}
@@ -447,6 +451,8 @@ export default function AdminPage() {
                       />
                     ) : (
                       <input
+                        id={id}
+                        name={id}
                         className="input w-full"
                         placeholder={placeholder}
                         defaultValue={value}
