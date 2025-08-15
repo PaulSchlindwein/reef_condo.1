@@ -62,6 +62,19 @@ const PAGE_TEXT_FIELDS: { section: string; fields: FieldDef[] }[] = [
       { id: 'resort.amenities.intro', label: 'Amenities intro' },
     ],
   },
+  {
+    section: 'Condo page',
+    fields: [
+      { id: 'condo.hero.title', label: 'Hero title', placeholder: 'Your Luxury Condo' },
+      { id: 'condo.name', label: 'Condo name' },
+      { id: 'condo.description', label: 'Condo description', placeholder: 'Long description' },
+      { id: 'condo.location.building', label: 'Building' },
+      { id: 'condo.location.floor', label: 'Floor' },
+      { id: 'condo.location.view', label: 'View' },
+      { id: 'condo.checkin.time', label: 'Check-in time' },
+      { id: 'condo.checkin.contact', label: 'Check-in contact' },
+    ],
+  },
 ];
 
 export default function AdminPage() {
@@ -141,7 +154,8 @@ export default function AdminPage() {
   }
 
   async function loadBlocksForPage() {
-    const res = await fetch('/api/content/blocks?page=info');
+    const pageParam = selectedPage.toLowerCase().startsWith('condo') ? 'condo' : 'info';
+    const res = await fetch(`/api/content/blocks?page=${encodeURIComponent(pageParam)}`);
     const data = await res.json();
     const blockData = data.data || [];
     setBlocks([...blockData]);

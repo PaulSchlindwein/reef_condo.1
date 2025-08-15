@@ -1,13 +1,26 @@
 import Image from 'next/image';
-import { condoData } from '../../../data/condoData';
+import { condoData as staticCondoData } from '../../../data/condoData';
 import { MapPin, Users, Bed, Bath, Check, Clock, Phone } from 'lucide-react';
+import { getText } from '@/content/client';
 
 export const metadata = {
   title: 'Luxury Condo Details | Reef Condo Paradise Island',
   description: 'Discover your stunning oceanfront condo at The Reef Atlantis with premium amenities, breathtaking views, and full resort access.',
 };
 
-export default function CondoPage() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function CondoPage() {
+  const heroTitle = await getText('condo.hero.title', 'Your Luxury Condo');
+  const condoName = await getText('condo.name', staticCondoData.name);
+  const condoDescription = await getText('condo.description', staticCondoData.description);
+  const building = await getText('condo.location.building', staticCondoData.location.building);
+  const floor = await getText('condo.location.floor', staticCondoData.location.floor);
+  const view = await getText('condo.location.view', staticCondoData.location.view);
+  const checkInTime = await getText('condo.checkin.time', staticCondoData.checkIn.time);
+  const checkInContact = await getText('condo.checkin.contact', staticCondoData.checkIn.contact);
+
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -22,10 +35,8 @@ export default function CondoPage() {
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="hero-title mb-4">Your Luxury Condo</h1>
-            <p className="text-xl md:text-2xl font-light">
-              {condoData.name}
-            </p>
+            <h1 className="hero-title mb-4">{heroTitle}</h1>
+            <p className="text-xl md:text-2xl font-light">{condoName}</p>
           </div>
         </div>
       </section>
@@ -35,22 +46,22 @@ export default function CondoPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           <div className="text-center p-6 card">
             <Users className="h-8 w-8 text-ocean-blue mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-dark">{condoData.capacity.guests}</div>
+            <div className="text-2xl font-bold text-gray-dark">{staticCondoData.capacity.guests}</div>
             <div className="text-gray-cool">Guests</div>
           </div>
           <div className="text-center p-6 card">
             <Bed className="h-8 w-8 text-ocean-blue mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-dark">{condoData.capacity.bedrooms}</div>
+            <div className="text-2xl font-bold text-gray-dark">{staticCondoData.capacity.bedrooms}</div>
             <div className="text-gray-cool">Bedrooms</div>
           </div>
           <div className="text-center p-6 card">
             <Bath className="h-8 w-8 text-ocean-blue mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-dark">{condoData.capacity.bathrooms}</div>
+            <div className="text-2xl font-bold text-gray-dark">{staticCondoData.capacity.bathrooms}</div>
             <div className="text-gray-cool">Bathrooms</div>
           </div>
           <div className="text-center p-6 card">
             <MapPin className="h-8 w-8 text-ocean-blue mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-dark">{condoData.location.floor}</div>
+            <div className="text-2xl font-bold text-gray-dark">{floor}</div>
             <div className="text-gray-cool">Floor</div>
           </div>
         </div>
@@ -61,17 +72,13 @@ export default function CondoPage() {
             {/* Description */}
             <section>
               <h2 className="section-title">Welcome to Paradise</h2>
-              <p className="text-lg leading-relaxed text-gray-cool mb-6">
-                {condoData.description}
-              </p>
+              <p className="text-lg leading-relaxed text-gray-cool mb-6">{condoDescription}</p>
               <div className="bg-sand-light p-6 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
                   <MapPin className="h-5 w-5 text-ocean-blue" />
                   <span className="font-semibold">Prime Location</span>
                 </div>
-                <p className="text-gray-cool">
-                  {condoData.location.building} • {condoData.location.view}
-                </p>
+                <p className="text-gray-cool">{building} • {view}</p>
               </div>
             </section>
 
@@ -79,7 +86,7 @@ export default function CondoPage() {
             <section>
               <h2 className="section-title">Photo Gallery</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {condoData.images.slice(0, 6).map((image, index) => (
+                {staticCondoData.images.slice(0, 6).map((image, index) => (
                   <div key={index} className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
                     <Image
                       src={image}
@@ -102,7 +109,7 @@ export default function CondoPage() {
             <section>
               <h2 className="section-title">Premium Amenities</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {condoData.amenities.map((amenity, index) => (
+                {staticCondoData.amenities.map((amenity, index) => (
                   <div key={index} className="flex items-center space-x-3 p-3 hover:bg-sand-light rounded-lg transition-colors">
                     <Check className="h-5 w-5 text-success-green flex-shrink-0" />
                     <span className="text-gray-dark">{amenity}</span>
@@ -115,7 +122,7 @@ export default function CondoPage() {
             <section>
               <h2 className="section-title">Luxury Features</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {condoData.features.map((feature, index) => (
+                {staticCondoData.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3 p-3 hover:bg-sand-light rounded-lg transition-colors">
                     <Check className="h-5 w-5 text-ocean-blue flex-shrink-0" />
                     <span className="text-gray-dark">{feature}</span>
@@ -136,18 +143,18 @@ export default function CondoPage() {
               <div className="space-y-3">
                 <div>
                   <div className="font-medium text-gray-dark">Check-in Time</div>
-                  <div className="text-gray-cool">{condoData.checkIn.time}</div>
+                  <div className="text-gray-cool">{checkInTime}</div>
                 </div>
                 <div>
                   <div className="font-medium text-gray-dark">Contact</div>
-                  <a href={`tel:${condoData.checkIn.contact}`} className="text-ocean-blue hover:text-ocean-light">
-                    {condoData.checkIn.contact}
+                  <a href={`tel:${checkInContact}`} className="text-ocean-blue hover:text-ocean-light">
+                    {checkInContact}
                   </a>
                 </div>
                 <div className="pt-3 border-t border-sand-warm">
                   <div className="font-medium text-gray-dark mb-2">Process</div>
                   <ul className="space-y-1 text-sm text-gray-cool">
-                    {condoData.checkIn.process.map((step, index) => (
+                    {staticCondoData.checkIn.process.map((step, index) => (
                       <li key={index} className="flex items-start space-x-2">
                         <span className="text-ocean-blue font-medium">{index + 1}.</span>
                         <span>{step}</span>
@@ -162,7 +169,7 @@ export default function CondoPage() {
             <div className="card p-6">
               <h3 className="text-xl font-semibold mb-4">House Rules</h3>
               <ul className="space-y-2">
-                {condoData.houseRules.map((rule, index) => (
+                {staticCondoData.houseRules.map((rule, index) => (
                   <li key={index} className="text-sm text-gray-cool flex items-start space-x-2">
                     <span className="text-coral-accent">•</span>
                     <span>{rule}</span>
