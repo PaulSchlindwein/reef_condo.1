@@ -775,8 +775,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Hours (amenities only) */}
         {slug === 'resort_amenities' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Hours</label>
+            <label htmlFor="hours" className="block text-sm font-medium mb-2">Hours</label>
             <input 
+              id="hours"
+              name="hours"
               className="input w-full" 
               value={getStringValue('hours')} 
               onChange={(e) => updateField('hours', e.target.value)}
@@ -788,8 +790,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Distance (area items) */}
         {slug.includes('area_') && slug !== 'area_transportation' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Distance</label>
+            <label htmlFor="distance" className="block text-sm font-medium mb-2">Distance</label>
             <input 
+              id="distance"
+              name="distance"
               className="input w-full" 
               value={getStringValue('distance')} 
               onChange={(e) => updateField('distance', e.target.value)}
@@ -801,8 +805,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Duration (transportation) */}
         {slug === 'area_transportation' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Duration</label>
+            <label htmlFor="duration" className="block text-sm font-medium mb-2">Duration</label>
             <input 
+              id="duration"
+              name="duration"
               className="input w-full" 
               value={getStringValue('duration')} 
               onChange={(e) => updateField('duration', e.target.value)}
@@ -814,8 +820,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Age Group (activities only) */}
         {slug === 'resort_activities' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Age Group</label>
+            <label htmlFor="ageGroup" className="block text-sm font-medium mb-2">Age Group</label>
             <select 
+              id="ageGroup"
+              name="ageGroup"
               className="input w-full" 
               value={getStringValue('ageGroup', 'all')} 
               onChange={(e) => updateField('ageGroup', e.target.value)}
@@ -845,7 +853,7 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
 
       {/* Highlights */}
       <div>
-        <label className="block text-sm font-medium mb-2">
+        <label htmlFor="highlights" className="block text-sm font-medium mb-2">
           {slug === 'area_local_restaurants' ? 'Specialties' : 'Highlights'}
         </label>
         <input 
@@ -861,8 +869,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       {/* Transport Options (attractions only) */}
       {slug === 'area_nassau_attractions' && (
         <div>
-          <label className="block text-sm font-medium mb-2">Transport Options</label>
+          <label htmlFor="transportOptions" className="block text-sm font-medium mb-2">Transport Options</label>
           <input 
+            id="transportOptions"
+            name="transportOptions"
             className="input w-full" 
             value={getArrayValue('transportOptions').join(', ')} 
             onChange={(e) => updateField('transportOptions', e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean))}
@@ -874,8 +884,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       {/* Booking Info (transportation only) */}
       {slug === 'area_transportation' && (
         <div>
-          <label className="block text-sm font-medium mb-2">Booking Info</label>
+          <label htmlFor="bookingInfo" className="block text-sm font-medium mb-2">Booking Info</label>
           <textarea 
+            id="bookingInfo"
+            name="bookingInfo"
             className="input w-full h-20" 
             value={getStringValue('bookingInfo')} 
             onChange={(e) => updateField('bookingInfo', e.target.value)}
@@ -886,7 +898,7 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
 
       {/* Link */}
       <div>
-        <label className="block text-sm font-medium mb-2">Link (optional)</label>
+        <label htmlFor="link" className="block text-sm font-medium mb-2">Link (optional)</label>
         <input 
           id="link"
           name="link"
