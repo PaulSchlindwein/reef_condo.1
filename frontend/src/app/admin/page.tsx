@@ -913,8 +913,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       {/* Local Favorite checkbox (local restaurants only) */}
       {slug === 'area_local_restaurants' && (
         <div>
-          <label className="flex items-center gap-2">
+          <label htmlFor="localFavorite" className="flex items-center gap-2">
             <input 
+              id="localFavorite"
+              name="localFavorite"
               type="checkbox" 
               checked={Boolean(formData.localFavorite)} 
               onChange={(e) => updateField('localFavorite', e.target.checked)}
