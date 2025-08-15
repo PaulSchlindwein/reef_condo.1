@@ -165,7 +165,9 @@ export default function AdminPage() {
   }
 
   async function loadItems(slug: string) {
-    const res = await fetch(`/api/content/collections/${slug}`);
+    const res = await fetch(`/api/content/collections/${slug}?t=${Date.now()}`, {
+      cache: 'no-store'
+    });
     const js = await res.json();
     setItems(js.items || []);
   }
