@@ -352,23 +352,30 @@ export default function AdminPage() {
       console.log('📡 API Response:', { status: res.status, ok: res.ok });
       
       if (res.ok) {
-        console.log('✅ Server update successful - optimistic update confirmed');
-        // Small delay to ensure database transaction is fully committed
-        console.log('⏳ Waiting 500ms for database transaction to commit...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log('✅ Server update successful - updating UI immediately');
         
-        // Try multiple refresh strategies to bypass caching
-        console.log('🔄 Attempting fresh data fetch (attempt 1)...');
-        await loadItems(activeSlug);
+        // DIRECT UI UPDATE: Skip all the complex fetching and just update the UI directly
+        console.log('🎯 Directly updating item in UI with new data');
+        const updatedItems = items.map(item => {
+          if (item.id === id) {
+            console.log('📝 Updating item:', { 
+              oldData: item.data, 
+              newData: completeUpdatedData 
+            });
+            return { 
+              ...item, 
+              data: { ...completeUpdatedData }, 
+              _refreshKey: Date.now() 
+            };
+          }
+          return item;
+        });
         
-        // If item count is still wrong, try again with longer delay
-        if (items.length !== (await (await fetch(`/api/content/collections/${activeSlug}?t=${Date.now()}&bypass=${Math.random()}`, { cache: 'no-store' })).json()).items?.length) {
-          console.log('⚠️ Item count mismatch detected, trying again in 1 second...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await loadItems(activeSlug);
-        }
+        console.log('🔄 Setting updated items array');
+        setItems(updatedItems);
+        setForceRender(prev => prev + 1);
         
-        console.log('✅ Fresh data loaded to confirm server state');
+        console.log('✅ UI updated successfully - user should see changes now');
       } else {
         // Server update failed
         console.error('❌ Server update failed');
