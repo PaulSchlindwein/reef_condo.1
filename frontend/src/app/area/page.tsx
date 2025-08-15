@@ -1,4 +1,8 @@
 import Image from 'next/image';
+
+// Force dynamic rendering to ensure collection edits show immediately
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { nassauAttractions as localNassauAttractions, localRestaurants as localLocalRestaurants, transportation as localTransportation } from '../../../data/areaData';
 import { Clock } from 'lucide-react';
 import { getPriceDisplay } from '@/components/shared/PriceDisplay';

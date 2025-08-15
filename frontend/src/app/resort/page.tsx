@@ -1,4 +1,9 @@
 import Image from 'next/image';
+
+// Force this route to render dynamically on every request so list edits
+// reflect immediately without requiring a redeploy (disable static caching)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { restaurants as localRestaurants, activities as localActivities, amenities as localAmenities } from '../../../data/resortData';
 import { Utensils, Activity, MapPin, Star } from 'lucide-react';
 import { getText, getList } from '@/content/client';
