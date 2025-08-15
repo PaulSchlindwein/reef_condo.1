@@ -632,8 +632,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Icon</label>
+            <label htmlFor="icon" className="block text-sm font-medium mb-2">Icon</label>
             <select 
+              id="icon"
+              name="icon"
               className="input w-full" 
               value={getStringValue('icon', 'utensils')} 
               onChange={(e) => updateField('icon', e.target.value)}
@@ -645,8 +647,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Value</label>
+            <label htmlFor="value" className="block text-sm font-medium mb-2">Value</label>
             <input 
+              id="value"
+              name="value"
               className="input w-full" 
               value={getStringValue('value')} 
               onChange={(e) => updateField('value', e.target.value)}
@@ -654,8 +658,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Label</label>
+            <label htmlFor="label" className="block text-sm font-medium mb-2">Label</label>
             <input 
+              id="label"
+              name="label"
               className="input w-full" 
               value={getStringValue('label')} 
               onChange={(e) => updateField('label', e.target.value)}
@@ -679,8 +685,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Name field (most items have this) */}
         {slug !== 'area_transportation' && (
           <div className={slug === 'resort_amenities' ? 'md:col-span-2' : ''}>
-            <label className="block text-sm font-medium mb-2">Name</label>
+            <label htmlFor="name" className="block text-sm font-medium mb-2">Name</label>
             <input 
+              id="name"
+              name="name"
               className="input w-full" 
               value={getStringValue('name')} 
               onChange={(e) => updateField('name', e.target.value)}
@@ -693,8 +701,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Type field */}
         {(slug.includes('restaurants') || slug.includes('activities') || slug.includes('attractions') || slug === 'area_transportation') && (
           <div>
-            <label className="block text-sm font-medium mb-2">Type</label>
+            <label htmlFor="type" className="block text-sm font-medium mb-2">Type</label>
             <input 
+              id="type"
+              name="type"
               className="input w-full" 
               value={getStringValue('type')} 
               onChange={(e) => updateField('type', e.target.value)}
@@ -707,8 +717,10 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
         {/* Status */}
         {slug !== 'area_transportation' && (
           <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
+            <label htmlFor="status" className="block text-sm font-medium mb-2">Status</label>
             <select 
+              id="status"
+              name="status"
               className="input w-full" 
               value={getStringValue('status', 'active')} 
               onChange={(e) => updateField('status', e.target.value)}
@@ -811,10 +823,12 @@ function ItemEditForm({ slug, item, onSave, onCancel }: {
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium mb-2">Description</label>
+        <label htmlFor="description" className="block text-sm font-medium mb-2">Description</label>
         <textarea 
+          id="description"
+          name="description"
           className="input w-full h-24" 
-                        value={getStringValue('description')} 
+          value={getStringValue('description')} 
           onChange={(e) => updateField('description', e.target.value)}
           placeholder="Enter description"
           required
