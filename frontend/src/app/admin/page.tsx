@@ -207,62 +207,130 @@ export default function AdminPage() {
 
   async function saveNewItem(data: Record<string, unknown>) {
     setSaving(true);
-    console.log('🔄 SAVING NEW ITEM:', { activeSlug, data });
+    console.log('🔄 STARTING NEW ITEM CREATION:', { activeSlug, data });
+    
+    // Store original state for potential rollback
+    const originalItems = [...items];
+    
+    // Create a temporary ID for optimistic update
+    const tempId = `temp-${Date.now()}`;
+    const tempItem: Item = {
+      id: tempId,
+      position: Date.now(),
+      data: data
+    };
+    
+    console.log('⚡ Adding optimistic item to UI:', tempItem);
+    
+    // OPTIMISTIC UPDATE: Add item to UI immediately
+    const optimisticItems = [...items, tempItem];
+    setItems(optimisticItems);
+    
+    // Close modal immediately so user sees the optimistic update
+    setShowAddModal(false);
+    setEditingItem(null);
     
     try {
-      const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+      const res = await fetch(`/api/content/collections/${activeSlug}`, { 
+        method: 'POST', 
+        headers: { 'content-type': 'application/json' }, 
+        body: JSON.stringify(data) 
+      });
+      
       console.log('📡 API Response:', { status: res.status, ok: res.ok });
       
       if (res.ok) {
-        console.log('✅ Save successful, closing modal and refreshing items...');
-        // Close modal first so user can see the list update
-        setShowAddModal(false);
-        setEditingItem(null);
-        setSaving(false);
-        // Then refresh the items
+        console.log('✅ Server creation successful - replacing temp item with real data');
+        // Fetch fresh data to get the real item with proper ID
         await loadItems(activeSlug);
-        console.log('✅ Modal closed and items refreshed - changes should be visible');
+        console.log('✅ Fresh data loaded with real item ID');
       } else {
+        // ROLLBACK: Server creation failed, remove optimistic item
+        console.error('❌ Server creation failed - removing optimistic item');
+        setItems(originalItems);
         const errorText = await res.text();
-        console.error('❌ Save failed:', { status: res.status, error: errorText });
+        console.error('❌ Server error details:', { status: res.status, error: errorText });
         alert(`Failed to save item: ${res.status} ${errorText}`);
-        setSaving(false);
       }
     } catch (error) {
-      console.error('❌ Save error:', error);
+      // ROLLBACK: Network error, remove optimistic item
+      console.error('❌ Network error - removing optimistic item:', error);
+      setItems(originalItems);
       alert('Failed to save item: Network error');
+    } finally {
       setSaving(false);
+      console.log('✅ New item creation completed');
     }
   }
 
-  async function saveItem(id: string, data: Record<string, unknown>) {
+  async function saveItem(id: string, newData: Record<string, unknown>) {
     setSaving(true);
-    console.log('🔄 UPDATING ITEM:', { activeSlug, id, data });
-    const payload = { id, update: data };
-    console.log('📦 Request payload:', payload);
+    console.log('🔄 STARTING ITEM UPDATE:', { activeSlug, id, newData });
+    
+    // Store original state for potential rollback
+    const originalItems = [...items];
+    
+    // Find the current item to get complete data
+    const currentItem = items.find(item => item.id === id);
+    if (!currentItem) {
+      console.error('❌ Current item not found in state:', { id, itemsCount: items.length });
+      alert('Error: Item not found in current state');
+      setSaving(false);
+      return;
+    }
+    
+    console.log('📋 Current item data:', currentItem.data);
+    console.log('🆕 New form data:', newData);
+    
+    // Create complete updated item data (merge current with new)
+    const completeUpdatedData = { ...currentItem.data, ...newData };
+    console.log('🔄 Complete updated data to send:', completeUpdatedData);
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
+    const optimisticItems = items.map(item => 
+      item.id === id 
+        ? { ...item, data: completeUpdatedData }
+        : item
+    );
+    console.log('⚡ Applying optimistic update to UI');
+    setItems(optimisticItems);
+    
+    // Close modal immediately so user sees the optimistic update
+    setEditingItem(null);
+    
+    const payload = { id, update: completeUpdatedData };
+    console.log('📦 API Request payload:', payload);
     
     try {
-      const res = await fetch(`/api/content/collections/${activeSlug}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await fetch(`/api/content/collections/${activeSlug}`, { 
+        method: 'PUT', 
+        headers: { 'content-type': 'application/json' }, 
+        body: JSON.stringify(payload) 
+      });
+      
       console.log('📡 API Response:', { status: res.status, ok: res.ok });
       
       if (res.ok) {
-        console.log('✅ Update successful, closing modal and refreshing items...');
-        // Close modal first so user can see the list update
-        setEditingItem(null);
-        setSaving(false);
-        // Then refresh the items
+        console.log('✅ Server update successful - optimistic update confirmed');
+        // Fetch fresh data to ensure consistency
         await loadItems(activeSlug);
-        console.log('✅ Modal closed and items refreshed - changes should be visible');
+        console.log('✅ Fresh data loaded to confirm server state');
       } else {
+        // ROLLBACK: Server update failed, revert optimistic update
+        console.error('❌ Server update failed - rolling back optimistic update');
+        setItems(originalItems);
         const errorText = await res.text();
-        console.error('❌ Update failed:', { status: res.status, error: errorText });
+        console.error('❌ Server error details:', { status: res.status, error: errorText });
         alert(`Failed to save item: ${res.status} ${errorText}`);
-        setSaving(false);
       }
     } catch (error) {
-      console.error('❌ Update error:', error);
+      // ROLLBACK: Network error, revert optimistic update
+      console.error('❌ Network error - rolling back optimistic update:', error);
+      setItems(originalItems);
       alert('Failed to save item: Network error');
+    } finally {
       setSaving(false);
+      console.log('✅ Save operation completed');
     }
   }
 
@@ -683,6 +751,9 @@ function ItemEditForm({ slug, item, onSave, onCancel, saving }: {
 }) {
   const [formData, setFormData] = useState(item?.data || {});
   
+  // Debug: Log form initialization
+  console.log('🎨 Form initialized with data:', { slug, itemId: item?.id, initialData: item?.data, formData });
+  
   const updateField = (field: string, value: unknown) => {
     setFormData((prev: Record<string, unknown>) => ({ ...prev, [field]: value }));
   };
@@ -701,8 +772,8 @@ function ItemEditForm({ slug, item, onSave, onCancel, saving }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('📝 FORM SUBMITTED:', { slug, formData });
-    console.log('🎯 Calling onSave with data:', formData);
+    console.log('📝 FORM SUBMITTED:', { slug, itemId: item?.id, formData });
+    console.log('🎯 Final form data being sent:', JSON.stringify(formData, null, 2));
     onSave(formData);
   };
 
